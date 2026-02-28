@@ -179,10 +179,10 @@
                     </header>
 
                     {/* Add Player Input */}
-                    <div className="gothic-card p-4 rounded-xl mb-6 flex gap-2">
+                    <div className="gothic-card p-3 rounded-2xl mb-6 flex items-center gap-3 sm:p-4">
                         <input
                             type="text"
-                            className="bg-transparent border-b border-gray-700 flex-1 focus:border-red-800 outline-none px-2 py-1 text-lg"
+                            className="bg-gray-900/40 border border-gray-800/60 rounded-xl flex-1 focus:border-red-900/40 focus:bg-gray-900/60 outline-none px-4 py-2.5 text-lg transition-all"
                             placeholder="Nombre del alma..."
                             value={newName}
                             onChange={(e) => setNewName(e.target.value)}
@@ -190,7 +190,7 @@
                         />
                         <button
                             onClick={addPlayer}
-                            className="bg-red-900/50 hover:bg-red-800 text-white px-4 py-2 rounded-lg title-font text-xs transition-colors"
+                            className="bg-red-900 text-white px-5 py-2.5 rounded-xl title-font text-[10px] font-bold hover:bg-red-800 active:scale-95 transition-all shadow-lg shadow-red-900/20 whitespace-nowrap"
                         >
                             INVOCAR
                         </button>
