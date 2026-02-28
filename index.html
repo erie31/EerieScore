@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EerieScore</title>
     <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="eerielogo.png">
+    <link rel="apple-touch-icon" href="eerielogo.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -191,9 +193,45 @@
                 localStorage.setItem('eeri-tutorial-done', 'true');
             };
 
+            const [deferredPrompt, setDeferredPrompt] = useState(null);
+            const [isInstallable, setIsInstallable] = useState(false);
+
+            useEffect(() => {
+                const handleBeforeInstallPrompt = (e) => {
+                    // Prevent the mini-infobar from appearing on mobile
+                    e.preventDefault();
+                    // Stash the event so it can be triggered later.
+                    setDeferredPrompt(e);
+                    // Update UI notify the user they can install the PWA
+                    setIsInstallable(true);
+                };
+
+                window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+                return () => {
+                    window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+                };
+            }, []);
+
+            const handleInstallClick = async () => {
+                if (!deferredPrompt) return;
+                // Show the install prompt
+                deferredPrompt.prompt();
+                // Wait for the user to respond to the prompt
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    console.log('User accepted the install prompt');
+                } else {
+                    console.log('User dismissed the install prompt');
+                }
+                // We've used the prompt, and can't use it again, throw it away
+                setDeferredPrompt(null);
+                setIsInstallable(false);
+            };
+
             return (
                 <React.Fragment>
-                    <div className={`min-h-screen p-4 max-w-md mx-auto fade-in ${isTutorialActive ? 'pointer-events-none' : ''}`}>
+                    <div className={`min-h-screen p-4 max-w-md mx-auto fade-in pb-20 ${isTutorialActive ? 'pointer-events-none' : ''}`}>
                         <header className="text-center mb-8 pt-4">
                             <h1 className="title-font text-4xl font-black text-red-700 blood-shadow mb-1">EERIESCORE</h1>
                         </header>
@@ -331,6 +369,21 @@
                             <div className="mt-20 text-center text-gray-600 opacity-50">
                                 <p className="title-font text-sm mb-2 italic">Sin almas que contar</p>
                                 <p className="text-xs">Añade un jugador para comenzar el ritual.</p>
+                            </div>
+                        )}
+
+                        {/* Install Footer */}
+                        {isInstallable && !isTutorialActive && (
+                            <div className="fixed bottom-0 left-0 right-0 bg-gray-900/90 backdrop-blur-md border-t border-red-900/30 p-4 text-center z-30 fade-in">
+                                <button
+                                    onClick={handleInstallClick}
+                                    className="gothic-card px-6 py-2.5 rounded-full title-font text-[10px] font-bold text-red-500 hover:text-red-400 hover:border-red-500 transition-colors tracking-widest flex items-center justify-center gap-2 mx-auto"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                    </svg>
+                                    INSTALAR APP PARA MODO OFFLINE
+                                </button>
                             </div>
                         )}
                     </div>
