@@ -88,6 +88,11 @@
             const [editingId, setEditingId] = useState(null);
             const [editText, setEditText] = useState('');
 
+            const [isTutorialActive, setIsTutorialActive] = useState(() => {
+                return localStorage.getItem('eeri-tutorial-done') !== 'true';
+            });
+            const [tutorialStep, setTutorialStep] = useState(0);
+
             useEffect(() => {
                 localStorage.setItem('eeri-players', JSON.stringify(players));
             }, [players]);
@@ -172,125 +177,189 @@
                 return players.find(p => p.total === max)?.id;
             }, [players]);
 
+            const nextStep = () => {
+                if (tutorialStep < 2) {
+                    setTutorialStep(tutorialStep + 1);
+                } else {
+                    setIsTutorialActive(false);
+                    localStorage.setItem('eeri-tutorial-done', 'true');
+                }
+            };
+
+            const skipTutorial = () => {
+                setIsTutorialActive(false);
+                localStorage.setItem('eeri-tutorial-done', 'true');
+            };
+
             return (
-                <div className="min-h-screen p-4 max-w-md mx-auto fade-in">
-                    <header className="text-center mb-8 pt-4">
-                        <h1 className="title-font text-4xl font-black text-red-700 blood-shadow mb-1">EERIESCORE</h1>
-                    </header>
+                <React.Fragment>
+                    <div className={`min-h-screen p-4 max-w-md mx-auto fade-in ${isTutorialActive ? 'pointer-events-none' : ''}`}>
+                        <header className="text-center mb-8 pt-4">
+                            <h1 className="title-font text-4xl font-black text-red-700 blood-shadow mb-1">EERIESCORE</h1>
+                        </header>
 
-                    {/* Add Player Input */}
-                    <div className="gothic-card p-3 rounded-2xl mb-6 flex items-center gap-3 sm:p-4">
-                        <input
-                            type="text"
-                            className="bg-gray-900/40 border border-gray-800/60 rounded-xl flex-1 focus:border-red-900/40 focus:bg-gray-900/60 outline-none px-4 py-2.5 text-lg transition-all"
-                            placeholder="Nombre del alma..."
-                            value={newName}
-                            onChange={(e) => setNewName(e.target.value)}
-                            onKeyPress={(e) => e.key === 'Enter' && addPlayer()}
-                        />
-                        <button
-                            onClick={addPlayer}
-                            className="bg-red-900 text-white px-5 py-2.5 rounded-xl title-font text-[10px] font-bold hover:bg-red-800 active:scale-95 transition-all shadow-lg shadow-red-900/20 whitespace-nowrap"
-                        >
-                            INVOCAR
-                        </button>
-                    </div>
-
-                    {/* Actions */}
-                    <div className="flex justify-between gap-2 mb-6">
-                        <button onClick={shufflePlayers} className="flex-1 bg-gray-900/50 border border-gray-800 py-3 rounded-lg text-xs title-font hover:border-red-900 transition-all">
-                            SORTEAR
-                        </button>
-                        <button onClick={newGame} className="flex-1 bg-gray-900/50 border border-gray-800 py-3 rounded-lg text-xs title-font hover:border-red-900 transition-all text-red-400">
-                            REINICIAR
-                        </button>
-                    </div>
-
-                    {/* Player List */}
-                    <div className="space-y-4">
-                        {players.map((player) => (
-                            <div
-                                key={player.id}
-                                className={`gothic-card p-4 rounded-2xl transition-all duration-500 ${leaderId === player.id ? 'leader-glow' : ''}`}
+                        <div className={`gothic-card p-2 sm:p-3 rounded-2xl mb-6 flex items-center gap-2 sm:gap-3 ${isTutorialActive && tutorialStep === 0 ? 'relative z-50 ring-2 ring-red-500 bg-gray-900 pointer-events-none' : ''}`}>
+                            <input
+                                type="text"
+                                className="bg-gray-900/40 border border-gray-800/60 rounded-xl flex-1 min-w-0 focus:border-red-900/40 focus:bg-gray-900/60 outline-none px-3 py-2 sm:px-4 sm:py-2.5 text-base sm:text-lg transition-all"
+                                placeholder="Nombre del alma..."
+                                value={newName}
+                                onChange={(e) => setNewName(e.target.value)}
+                                onKeyPress={(e) => e.key === 'Enter' && addPlayer()}
+                            />
+                            <button
+                                onClick={addPlayer}
+                                className="bg-red-900 text-white px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl title-font text-[9px] sm:text-[10px] font-bold hover:bg-red-800 active:scale-95 transition-all shadow-lg shadow-red-900/20 whitespace-nowrap flex-shrink-0"
                             >
-                                <div className="flex justify-between items-center mb-3">
-                                    <div className="flex items-center gap-2">
-                                        {editingId === player.id ? (
+                                INVOCAR
+                            </button>
+                        </div>
+
+                        <div className={`flex justify-between gap-2 mb-6 ${isTutorialActive && tutorialStep === 1 ? 'relative z-50 ring-2 ring-red-500 rounded-lg shadow-[0_0_20px_rgba(255,0,0,0.3)] pointer-events-none' : ''}`}>
+                            <button onClick={shufflePlayers} className="flex-1 bg-gray-900/50 border border-gray-800 py-3 rounded-lg text-xs title-font hover:border-red-900 transition-all">
+                                SORTEAR
+                            </button>
+                            <button onClick={newGame} className="flex-1 bg-gray-900/50 border border-gray-800 py-3 rounded-lg text-xs title-font hover:border-red-900 transition-all text-red-400">
+                                REINICIAR
+                            </button>
+                        </div>
+
+                        {isTutorialActive && tutorialStep === 2 && (
+                            <div className="relative z-50 mt-4 pointer-events-none ring-2 ring-red-500 rounded-2xl bg-gray-900 mb-6 leader-glow">
+                                <div className="gothic-card p-4 rounded-2xl">
+                                    <div className="flex justify-between items-center mb-3">
+                                        <div className="flex items-center gap-2">
+                                            <h2 className="title-font text-xl">Alma Purgada</h2>
+                                            <span className="text-green-500 text-xl">👑</span>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="text-xs text-gray-500 uppercase tracking-tighter">Total</p>
+                                            <p className="text-3xl font-black title-font text-red-600">66</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-wrap gap-1 mb-4 min-h-[1.5rem] opacity-40">
+                                        <span className="text-[10px] px-1.5 py-0.5 rounded border border-gray-800 text-blue-400">+66</span>
+                                    </div>
+                                    <div className="flex gap-2 items-center">
+                                        <input type="number" className="w-24 bg-gray-800/50 border border-gray-700 rounded-lg py-3 px-3 text-center text-xl outline-none focus:border-red-800" placeholder="0" readOnly />
+                                        <button className="flex-1 bg-red-900/80 text-white font-bold py-3 rounded-lg title-font text-sm">SUMAR</button>
+                                        <button className="w-12 h-12 flex items-center justify-center text-gray-700"><svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {!isTutorialActive && (
+                            <div className="space-y-4">
+                                {players.map((player) => (
+                                    <div
+                                        key={player.id}
+                                        className={`gothic-card p-4 rounded-2xl transition-all duration-500 ${leaderId === player.id ? 'leader-glow' : ''}`}
+                                    >
+                                        <div className="flex justify-between items-center mb-3">
+                                            <div className="flex items-center gap-2">
+                                                {editingId === player.id ? (
+                                                    <input
+                                                        autoFocus
+                                                        autoComplete="off"
+                                                        className="bg-gray-800 rounded px-2 py-1 outline-none text-red-500"
+                                                        value={editText}
+                                                        onChange={(e) => setEditText(e.target.value)}
+                                                        onBlur={saveEdit}
+                                                        onKeyPress={(e) => e.key === 'Enter' && saveEdit()}
+                                                    />
+                                                ) : (
+                                                    <h2 onClick={() => startEdit(player)} className="title-font text-xl cursor-pointer">
+                                                        {player.name}
+                                                    </h2>
+                                                )}
+                                                {leaderId === player.id && <span className="text-green-500 text-xl">👑</span>}
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="text-xs text-gray-500 uppercase tracking-tighter">Total</p>
+                                                <p className="text-3xl font-black title-font text-red-600">{player.total}</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex flex-wrap gap-1 mb-4 min-h-[1.5rem] opacity-40">
+                                            {player.history.map((s, i) => (
+                                                <span key={i} className={`text-[10px] px-1.5 py-0.5 rounded border border-gray-800 ${s >= 0 ? 'text-blue-400' : 'text-red-400'}`}>
+                                                    {s > 0 ? `+${s}` : s}
+                                                </span>
+                                            ))}
+                                        </div>
+
+                                        <div className="flex gap-2 items-center">
                                             <input
-                                                autoFocus
-                                                autoComplete="off"
-                                                className="bg-gray-800 rounded px-2 py-1 outline-none text-red-500"
-                                                value={editText}
-                                                onChange={(e) => setEditText(e.target.value)}
-                                                onBlur={saveEdit}
-                                                onKeyPress={(e) => e.key === 'Enter' && saveEdit()}
+                                                type="number"
+                                                className="w-24 bg-gray-800/50 border border-gray-700 rounded-lg py-3 px-3 text-center text-xl outline-none focus:border-red-800 transition-colors"
+                                                placeholder="0"
+                                                value={player.scoreInput}
+                                                onChange={(e) => updateScoreInput(player.id, e.target.value)}
+                                                onKeyPress={(e) => e.key === 'Enter' && addScore(player.id)}
                                             />
-                                        ) : (
-                                            <h2 onClick={() => startEdit(player)} className="title-font text-xl cursor-pointer">
-                                                {player.name}
-                                            </h2>
-                                        )}
-                                        {leaderId === player.id && <span className="text-green-500 text-xl">�</span>}
+                                            <button
+                                                onClick={() => addScore(player.id)}
+                                                className="flex-1 bg-red-900/80 text-white font-bold py-3 rounded-lg title-font text-sm active:scale-95 transition-transform"
+                                            >
+                                                SUMAR
+                                            </button>
+                                            <button
+                                                onClick={() => removePlayer(player.id)}
+                                                className="w-12 h-12 flex items-center justify-center text-gray-700 hover:text-red-900 transition-colors"
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                            </button>
+                                        </div>
                                     </div>
-                                    <div className="text-right">
-                                        <p className="text-xs text-gray-500 uppercase tracking-tighter">Total</p>
-                                        <p className="text-3xl font-black title-font text-red-600">{player.total}</p>
-                                    </div>
-                                </div>
+                                ))}
+                            </div>
+                        )}
 
-                                {/* History dots */}
-                                <div className="flex flex-wrap gap-1 mb-4 min-h-[1.5rem] opacity-40">
-                                    {player.history.map((s, i) => (
-                                        <span key={i} className={`text-[10px] px-1.5 py-0.5 rounded border border-gray-800 ${s >= 0 ? 'text-blue-400' : 'text-red-400'}`}>
-                                            {s > 0 ? `+${s}` : s}
-                                        </span>
-                                    ))}
-                                </div>
+                        {!isTutorialActive && players.length > 0 && (
+                            <button
+                                onClick={clearAll}
+                                className="w-full mt-12 mb-8 text-gray-700 hover:text-red-900 text-xs title-font tracking-widest transition-colors"
+                            >
+                                ELIMINAR TODO
+                            </button>
+                        )}
 
-                                <div className="flex gap-2 items-center">
-                                    <input
-                                        type="number"
-                                        className="w-24 bg-gray-800/50 border border-gray-700 rounded-lg py-3 px-3 text-center text-xl outline-none focus:border-red-800 transition-colors"
-                                        placeholder="0"
-                                        value={player.scoreInput}
-                                        onChange={(e) => updateScoreInput(player.id, e.target.value)}
-                                        onKeyPress={(e) => e.key === 'Enter' && addScore(player.id)}
-                                    />
-                                    <button
-                                        onClick={() => addScore(player.id)}
-                                        className="flex-1 bg-red-900/80 text-white font-bold py-3 rounded-lg title-font text-sm active:scale-95 transition-transform"
-                                    >
-                                        SUMAR
-                                    </button>
-                                    <button
-                                        onClick={() => removePlayer(player.id)}
-                                        className="w-12 h-12 flex items-center justify-center text-gray-700 hover:text-red-900 transition-colors"
-                                    >
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
+                        {!isTutorialActive && players.length === 0 && (
+                            <div className="mt-20 text-center text-gray-600 opacity-50">
+                                <p className="title-font text-sm mb-2 italic">Sin almas que contar</p>
+                                <p className="text-xs">Añade un jugador para comenzar el ritual.</p>
+                            </div>
+                        )}
+                    </div>
+
+                    {isTutorialActive && (
+                        <div className="fixed inset-0 bg-black/85 z-40 flex flex-col justify-end items-center pb-12 px-4 transition-all">
+                            <div className="bg-gray-900 border border-red-900 p-6 rounded-2xl w-full max-w-md z-50 text-center shadow-2xl blood-shadow fade-in pointer-events-auto relative">
+                                <div className="absolute -top-[9px] left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-[10px] border-r-[10px] border-b-[10px] border-transparent border-b-red-900"></div>
+
+                                <h3 className="title-font text-red-500 mb-4 text-lg tracking-widest">{
+                                    tutorialStep === 0 ? 'INVOCACIONES' :
+                                        tutorialStep === 1 ? 'ACCIONES' :
+                                            'EL RITUAL'
+                                }</h3>
+                                <p className="text-gray-300 text-sm mb-8 min-h-[3rem] font-light leading-relaxed">
+                                    {tutorialStep === 0 && 'Escribe el nombre de un participante y presiona INVOCAR para sumarlo a la partida.'}
+                                    {tutorialStep === 1 && 'SORTEAR cambia el orden de los turnos. REINICIAR revierte todos los puntos de todos los jugadores a cero.'}
+                                    {tutorialStep === 2 && 'Toca el nombre de un jugador para editarlo, ingresa los puntos y suma. El líder brillará en la oscuridad.'}
+                                </p>
+                                <div className="flex justify-between items-center mt-2">
+                                    <button onClick={skipTutorial} className="text-gray-500 text-xs title-font hover:text-gray-300 transition-colors tracking-widest decoration-1 underline-offset-4">SALTAR</button>
+                                    <button onClick={nextStep} className="bg-red-900 text-white px-6 py-3 rounded-lg text-sm font-bold title-font shadow-[0_0_15px_rgba(139,0,0,0.5)] hover:bg-red-800 transition-all active:scale-95 tracking-widest">
+                                        {tutorialStep === 2 ? 'COMENZAR' : 'SIGUIENTE'}
                                     </button>
                                 </div>
                             </div>
-                        ))}
-                    </div>
-
-                    {players.length > 0 && (
-                        <button
-                            onClick={clearAll}
-                            className="w-full mt-12 mb-8 text-gray-700 hover:text-red-900 text-xs title-font tracking-widest transition-colors"
-                        >
-                            ELIMINAR TODO
-                        </button>
-                    )}
-
-                    {players.length === 0 && (
-                        <div className="mt-20 text-center text-gray-600 opacity-50">
-                            <p className="title-font text-sm mb-2 italic">Sin almas que contar</p>
-                            <p className="text-xs">Añade un jugador para comenzar el ritual.</p>
                         </div>
                     )}
-                </div>
+                </React.Fragment>
             );
         }
 
