@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EerieScore</title>
+    <link rel="manifest" href="manifest.json">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Inter:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        @font-face {
+            font-family: 'Akira';
+            src: url('https://fonts.cdnfonts.com/s/72895/Akira Expanded Demo.woff') format('woff');
+        }
+        body {
+            background-color: #050505;
+            color: #e0e0e0;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+        .title-font {
+            font-family: 'Akira', 'Cinzel', serif;
+            letter-spacing: 0.1em;
+        }
+        .gothic-card {
+            background: rgba(15, 15, 15, 0.8);
+            border: 1px solid rgba(139, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+        }
+        .blood-shadow {
+            box-shadow: 0 0 15px rgba(139, 0, 0, 0.4);
+        }
+        .leader-glow {
+            border: 1px solid rgba(255, 215, 0, 0.6) !important;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+        }
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .fade-in { animation: fadeIn 0.5s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useMemo } = React;
+
+        function App() {
+            const [players, setPlayers] = useState(() => {
+                const saved = localStorage.getItem('eeri-players');
+                return saved ? JSON.parse(saved) : [];
+            });
+            const [newName, setNewName] = useState('');
+            const [editingId, setEditingId] = useState(null);
+            const [editText, setEditText] = useState('');
+
+            useEffect(() => {
+                localStorage.setItem('eeri-players', JSON.stringify(players));
+            }, [players]);
+
+            const addPlayer = () => {
+                if (!newName.trim()) return;
+                const newPlayer = {
+                    id: Date.now(),
+                    name: newName.trim(),
+                    history: [],
+                    total: 0,
+                    scoreInput: ''
+                };
+                setPlayers([...players, newPlayer]);
+                setNewName('');
+            };
+
+            const removePlayer = (id) => {
+                setPlayers(players.filter(p => p.id !== id));
+            };
+
+            const startEdit = (player) => {
+                setEditingId(player.id);
+                setEditText(player.name);
+            };
+
+            const saveEdit = () => {
+                setPlayers(players.map(p => 
+                    p.id === editingId ? { ...p, name: editText } : p
+                ));
+                setEditingId(null);
+            };
+
+            const addScore = (id) => {
+                setPlayers(players.map(p => {
+                    if (p.id === id) {
+                        const score = parseInt(p.scoreInput) || 0;
+                        const newHistory = [...p.history, score];
+                        return {
+                            ...p,
+                            history: newHistory,
+                            total: newHistory.reduce((a, b) => a + b, 0),
+                            scoreInput: ''
+                        };
+                    }
+                    return p;
+                }));
+            };
+
+            const updateScoreInput = (id, val) => {
+                setPlayers(players.map(p => 
+                    p.id === id ? { ...p, scoreInput: val } : p
+                ));
+            };
+
+            const shufflePlayers = () => {
+                const shuffled = [...players].sort(() => Math.random() - 0.5);
+                setPlayers(shuffled);
+            };
+
+            const newGame = () => {
+                if(confirm('¿Reiniciar todos los puntajes?')) {
+                    setPlayers(players.map(p => ({
+                        ...p,
+                        history: [],
+                        total: 0,
+                        scoreInput: ''
+                    })));
+                }
+            };
+
+            const clearAll = () => {
+                if(confirm('¿Eliminar todos los jugadores y puntos?')) {
+                    setPlayers([]);
+                }
+            };
+
+            const leaderId = useMemo(() => {
+                if (players.length === 0) return null;
+                const max = Math.max(...players.map(p => p.total));
+                if (max === 0 && players.every(p => p.history.length === 0)) return null;
+                return players.find(p => p.total === max)?.id;
+            }, [players]);
+
+            return (
+                <div className="min-h-screen p-4 max-w-md mx-auto fade-in">
+                    <header className="text-center mb-8 pt-4">
+                        <h1 className="title-font text-4xl font-black text-red-700 blood-shadow mb-1">EERIESCORE</h1>
+                        <p className="text-xs uppercase tracking-widest text-gray-500">Gothic Score Keeper</p>
+                    </header>
+
+                    {/* Add Player Input */}
+                    <div className="gothic-card p-4 rounded-xl mb-6 flex gap-2">
+                        <input 
+                            type="text" 
+                            className="bg-transparent border-b border-gray-700 flex-1 focus:border-red-800 outline-none px-2 py-1 text-lg"
+                            placeholder="Nombre del alma..."
+                            value={newName}
+                            onChange={(e) => setNewName(e.target.value)}
+                            onKeyPress={(e) => e.key === 'Enter' && addPlayer()}
+                        />
+                        <button 
+                            onClick={addPlayer}
+                            className="bg-red-900/50 hover:bg-red-800 text-white px-4 py-2 rounded-lg title-font text-xs transition-colors"
+                        >
+                            INVOCAR
+                        </button>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex justify-between gap-2 mb-6">
+                        <button onClick={shufflePlayers} className="flex-1 bg-gray-900/50 border border-gray-800 py-3 rounded-lg text-xs title-font hover:border-red-900 transition-all">
+                            SORTEAR
+                        </button>
+                        <button onClick={newGame} className="flex-1 bg-gray-900/50 border border-gray-800 py-3 rounded-lg text-xs title-font hover:border-red-900 transition-all text-red-400">
+                            REINICIAR
+                        </button>
+                    </div>
+
+                    {/* Player List */}
+                    <div className="space-y-4">
+                        {players.map((player) => (
+                            <div 
+                                key={player.id} 
+                                className={`gothic-card p-4 rounded-2xl transition-all duration-500 ${leaderId === player.id ? 'leader-glow' : ''}`}
+                            >
+                                <div className="flex justify-between items-center mb-3">
+                                    <div className="flex items-center gap-2">
+                                        {editingId === player.id ? (
+                                            <input 
+                                                autoFocus
+                                                autoComplete="off"
+                                                className="bg-gray-800 rounded px-2 py-1 outline-none text-red-500"
+                                                value={editText}
+                                                onChange={(e) => setEditText(e.target.value)}
+                                                onBlur={saveEdit}
+                                                onKeyPress={(e) => e.key === 'Enter' && saveEdit()}
+                                            />
+                                        ) : (
+                                            <h2 onClick={() => startEdit(player)} className="title-font text-xl cursor-pointer">
+                                                {player.name}
+                                            </h2>
+                                        )}
+                                        {leaderId === player.id && <span className="text-yellow-500 text-xl">💀</span>}
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-xs text-gray-500 uppercase tracking-tighter">Total</p>
+                                        <p className="text-3xl font-black title-font text-red-600">{player.total}</p>
+                                    </div>
+                                </div>
+
+                                {/* History dots */}
+                                <div className="flex flex-wrap gap-1 mb-4 min-h-[1.5rem] opacity-40">
+                                    {player.history.map((s, i) => (
+                                        <span key={i} className={`text-[10px] px-1.5 py-0.5 rounded border border-gray-800 ${s >= 0 ? 'text-blue-400' : 'text-red-400'}`}>
+                                            {s > 0 ? `+${s}` : s}
+                                        </span>
+                                    ))}
+                                </div>
+
+                                <div className="flex gap-2 items-center">
+                                    <input 
+                                        type="number"
+                                        className="w-24 bg-gray-800/50 border border-gray-700 rounded-lg py-3 px-3 text-center text-xl outline-none focus:border-red-800 transition-colors"
+                                        placeholder="0"
+                                        value={player.scoreInput}
+                                        onChange={(e) => updateScoreInput(player.id, e.target.value)}
+                                        onKeyPress={(e) => e.key === 'Enter' && addScore(player.id)}
+                                    />
+                                    <button 
+                                        onClick={() => addScore(player.id)}
+                                        className="flex-1 bg-red-900/80 text-white font-bold py-3 rounded-lg title-font text-sm active:scale-95 transition-transform"
+                                    >
+                                        SUMAR
+                                    </button>
+                                    <button 
+                                        onClick={() => removePlayer(player.id)}
+                                        className="w-12 h-12 flex items-center justify-center text-gray-700 hover:text-red-900 transition-colors"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {players.length > 0 && (
+                        <button 
+                            onClick={clearAll}
+                            className="w-full mt-12 mb-8 text-gray-700 hover:text-red-900 text-xs title-font tracking-widest transition-colors"
+                        >
+                            ELIMINAR TODO
+                        </button>
+                    )}
+
+                    {players.length === 0 && (
+                        <div className="mt-20 text-center text-gray-600 opacity-50">
+                            <p className="title-font text-sm mb-2 italic">Sin almas que contar</p>
+                            <p className="text-xs">Añade un jugador para comenzar el ritual.</p>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('SW Registered'))
+                    .catch(err => console.log('SW Registration Failed', err));
+            });
+        }
+    </script>
+</body>
+</html>

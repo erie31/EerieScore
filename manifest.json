@@ -1,0 +1,17 @@
+{
+  "name": "EerieScore",
+  "short_name": "EerieScore",
+  "description": "Gothic Score Keeper for Games",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#8b0000",
+  "icons": [
+    {
+      "src": "https://img.icons8.com/ios-filled/512/c62828/death.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
