@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,44 +12,67 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Inter:wght@300;400;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Inter:wght@300;400;700&display=swap"
+        rel="stylesheet">
     <style>
         @font-face {
             font-family: 'Akira';
             src: url('https://fonts.cdnfonts.com/s/72895/Akira Expanded Demo.woff') format('woff');
         }
+
         body {
             background-color: #050505;
             color: #e0e0e0;
             font-family: 'Inter', sans-serif;
             overflow-x: hidden;
         }
+
         .title-font {
             font-family: 'Akira', 'Cinzel', serif;
             letter-spacing: 0.1em;
         }
+
         .gothic-card {
             background: rgba(15, 15, 15, 0.8);
             border: 1px solid rgba(139, 0, 0, 0.3);
             backdrop-filter: blur(10px);
             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
         }
+
         .blood-shadow {
             box-shadow: 0 0 15px rgba(139, 0, 0, 0.4);
         }
+
         .leader-glow {
             border: 1px solid rgba(255, 215, 0, 0.6) !important;
             box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
         }
+
         input::-webkit-outer-spin-button,
         input::-webkit-inner-spin-button {
             -webkit-appearance: none;
             margin: 0;
         }
-        .fade-in { animation: fadeIn 0.5s ease-in; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
     </style>
 </head>
+
 <body>
     <div id="root"></div>
 
@@ -91,7 +115,7 @@
             };
 
             const saveEdit = () => {
-                setPlayers(players.map(p => 
+                setPlayers(players.map(p =>
                     p.id === editingId ? { ...p, name: editText } : p
                 ));
                 setEditingId(null);
@@ -114,7 +138,7 @@
             };
 
             const updateScoreInput = (id, val) => {
-                setPlayers(players.map(p => 
+                setPlayers(players.map(p =>
                     p.id === id ? { ...p, scoreInput: val } : p
                 ));
             };
@@ -125,7 +149,7 @@
             };
 
             const newGame = () => {
-                if(confirm('¿Reiniciar todos los puntajes?')) {
+                if (confirm('¿Reiniciar todos los puntajes?')) {
                     setPlayers(players.map(p => ({
                         ...p,
                         history: [],
@@ -136,7 +160,7 @@
             };
 
             const clearAll = () => {
-                if(confirm('¿Eliminar todos los jugadores y puntos?')) {
+                if (confirm('¿Eliminar todos los jugadores y puntos?')) {
                     setPlayers([]);
                 }
             };
@@ -152,20 +176,19 @@
                 <div className="min-h-screen p-4 max-w-md mx-auto fade-in">
                     <header className="text-center mb-8 pt-4">
                         <h1 className="title-font text-4xl font-black text-red-700 blood-shadow mb-1">EERIESCORE</h1>
-                        <p className="text-xs uppercase tracking-widest text-gray-500">Gothic Score Keeper</p>
                     </header>
 
                     {/* Add Player Input */}
                     <div className="gothic-card p-4 rounded-xl mb-6 flex gap-2">
-                        <input 
-                            type="text" 
+                        <input
+                            type="text"
                             className="bg-transparent border-b border-gray-700 flex-1 focus:border-red-800 outline-none px-2 py-1 text-lg"
                             placeholder="Nombre del alma..."
                             value={newName}
                             onChange={(e) => setNewName(e.target.value)}
                             onKeyPress={(e) => e.key === 'Enter' && addPlayer()}
                         />
-                        <button 
+                        <button
                             onClick={addPlayer}
                             className="bg-red-900/50 hover:bg-red-800 text-white px-4 py-2 rounded-lg title-font text-xs transition-colors"
                         >
@@ -186,14 +209,14 @@
                     {/* Player List */}
                     <div className="space-y-4">
                         {players.map((player) => (
-                            <div 
-                                key={player.id} 
+                            <div
+                                key={player.id}
                                 className={`gothic-card p-4 rounded-2xl transition-all duration-500 ${leaderId === player.id ? 'leader-glow' : ''}`}
                             >
                                 <div className="flex justify-between items-center mb-3">
                                     <div className="flex items-center gap-2">
                                         {editingId === player.id ? (
-                                            <input 
+                                            <input
                                                 autoFocus
                                                 autoComplete="off"
                                                 className="bg-gray-800 rounded px-2 py-1 outline-none text-red-500"
@@ -225,7 +248,7 @@
                                 </div>
 
                                 <div className="flex gap-2 items-center">
-                                    <input 
+                                    <input
                                         type="number"
                                         className="w-24 bg-gray-800/50 border border-gray-700 rounded-lg py-3 px-3 text-center text-xl outline-none focus:border-red-800 transition-colors"
                                         placeholder="0"
@@ -233,13 +256,13 @@
                                         onChange={(e) => updateScoreInput(player.id, e.target.value)}
                                         onKeyPress={(e) => e.key === 'Enter' && addScore(player.id)}
                                     />
-                                    <button 
+                                    <button
                                         onClick={() => addScore(player.id)}
                                         className="flex-1 bg-red-900/80 text-white font-bold py-3 rounded-lg title-font text-sm active:scale-95 transition-transform"
                                     >
                                         SUMAR
                                     </button>
-                                    <button 
+                                    <button
                                         onClick={() => removePlayer(player.id)}
                                         className="w-12 h-12 flex items-center justify-center text-gray-700 hover:text-red-900 transition-colors"
                                     >
@@ -253,7 +276,7 @@
                     </div>
 
                     {players.length > 0 && (
-                        <button 
+                        <button
                             onClick={clearAll}
                             className="w-full mt-12 mb-8 text-gray-700 hover:text-red-900 text-xs title-font tracking-widest transition-colors"
                         >
@@ -284,4 +307,5 @@
         }
     </script>
 </body>
+
 </html>

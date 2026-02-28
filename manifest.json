@@ -1,7 +1,7 @@
 {
   "name": "EerieScore",
   "short_name": "EerieScore",
-  "description": "Gothic Score Keeper for Games",
+  "description": "EerieScore Game Tracker",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#000000",
